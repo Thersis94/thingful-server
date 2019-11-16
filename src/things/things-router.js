@@ -1,6 +1,6 @@
 const express = require('express')
 const ThingsService = require('./things-service')
-const { requireAuth } = require('../middleware/basic-auth')
+const { requireAuth } = require('../middleware/jwt-auth')
 
 const thingsRouter = express.Router()
 
@@ -19,6 +19,7 @@ thingsRouter
   .all(requireAuth)
   .all(checkThingExists)
   .get((req, res) => {
+    console.log(req)
     res.json(ThingsService.serializeThing(res.thing))
   })
 

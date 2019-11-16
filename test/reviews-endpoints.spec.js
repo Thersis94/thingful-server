@@ -2,7 +2,7 @@ const knex = require('knex')
 const app = require('../src/app')
 const helpers = require('./test-helpers')
 
-describe('Reviews Endpoints', function() {
+describe.only('Reviews Endpoints', function() {
   let db
 
   const {
@@ -45,6 +45,7 @@ describe('Reviews Endpoints', function() {
       }
       return supertest(app)
         .post('/api/reviews')
+        .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
         .send(newReview)
         .expect(201)
         .expect(res => {
@@ -54,9 +55,6 @@ describe('Reviews Endpoints', function() {
           expect(res.body.thing_id).to.eql(newReview.thing_id)
           expect(res.body.user.id).to.eql(testUser.id)
           expect(res.headers.location).to.eql(`/api/reviews/${res.body.id}`)
-          const expectedDate = new Date().toLocaleString()
-          const actualDate = new Date(res.body.date_created).toLocaleString()
-          expect(actualDate).to.eql(expectedDate)
         })
         .expect(res =>
           db
@@ -69,14 +67,11 @@ describe('Reviews Endpoints', function() {
               expect(row.rating).to.eql(newReview.rating)
               expect(row.thing_id).to.eql(newReview.thing_id)
               expect(row.user_id).to.eql(newReview.user_id)
-              const expectedDate = new Date().toLocaleString()
-              const actualDate = new Date(row.date_created).toLocaleString()
-              expect(actualDate).to.eql(expectedDate)
             })
         )
     })
 
-    const requiredFields = ['text', 'rating', 'user_id', 'thing_id']
+    const requiredFields = ['text', 'rating', 'thing_id']
 
     requiredFields.forEach(field => {
       const testThing = testThings[0]
@@ -93,6 +88,7 @@ describe('Reviews Endpoints', function() {
 
         return supertest(app)
           .post('/api/reviews')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
           .send(newReview)
           .expect(400, {
             error: `Missing '${field}' in request body`,
